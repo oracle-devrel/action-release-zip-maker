@@ -2,6 +2,7 @@
 
 require 'json'
 require 'zip'
+require 'httparty'
 
 class String
   def to_bool
