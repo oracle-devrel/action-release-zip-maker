@@ -49,7 +49,7 @@ def get_release_by_tag(in_repo, in_tag)
   
   headers = {
     'Content-Type' => 'application/vnd.github.v3+json',
-    'Authorization' => "token #{@gh_token}"
+    'Authorization' => "token #{@github_token}"
   }
   url = "https://api.github.com/repos/#{in_repo}/releases/tags/#{tag}"
   resp = HTTParty.get(url, headers: headers)
@@ -65,7 +65,7 @@ def upload_to_release(in_repo, release_id, zip_file)
   options = {
     headers: {
       'Content-Type' => 'application/zip',
-      'Authorization' => "token #{@gh_token}",
+      'Authorization' => "token #{@github_token}",
       'Content-Length' => File.size(zip_file).to_s
     },
     body: IO.read(zip_file, mode: 'rb'),

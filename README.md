@@ -13,6 +13,7 @@ The main reason is for flexibility.  Many of the existing Actions I looked at di
 | `config_file` | string | The name of the JSON config file.  Default: `release_files.json`. |
 | `fail_on_missing_file` | bool | Whether or not the Action should fail if a source file is missing (not found).  Default: `false`. |
 | `overwrite_dst` | string | Should the ZIP file be overwritten?  Default: `true`. |
+| `github_token` | string | The token used to interact with the GitHub API.  Usually use `secrets.GITHUB_TOKEN`. |
 
 ## Outputs
 | Output | Type | Description |
@@ -27,7 +28,7 @@ This reads a JSON config file, which tells what ZIP file(s) to create.  Here's a
 [
   {
     "action": "create_zip",
-    "file_name": "redbull-analytics-hol-latest.zip",
+    "file_name": "awesome_zip.zip",
     "files": [
       {
         "src_pattern": "*.tf"
@@ -44,6 +45,10 @@ This reads a JSON config file, which tells what ZIP file(s) to create.  Here's a
         "recursive": true
       }
     ]
+  },
+  {
+    "action": "upload_file",
+    "file_name": "awesome_zip.zip"
   }
 ]
 ```
@@ -52,8 +57,8 @@ Config file options:
 
 | Parameter | Description |
 |-----------|-------------|
-| `action` | The type of action.  Only `create_zip` is supported now. |
-| `file_name` | The name of the ZIP file to be created. |
+| `action` | The type of action.  `create_zip` and `upload_file` is supported now. |
+| `file_name` | The name of the ZIP file to be created (`create_zip`) or uploaded to the release (`upload_file`). |
 | `files` | Each ZIP file may have one or more files inside it. |
 
 Inside of the `files` list attribute, it allows for `src` or `src_pattern` to specify the source file.  These accept files or directories to be given.
