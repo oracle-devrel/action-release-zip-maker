@@ -21,7 +21,7 @@ class String
 end
 
 def get_env_vars()
-  required_vars = ['GITHUB_REF', 'github_token', 'GITHUB_REPOSITORY']
+  required_vars = ['GITHUB_REF', 'INPUT_GITHUB_TOKEN', 'GITHUB_REPOSITORY']
   required_vars.each do |v|
     if ENV.include?(v) && ENV[v].to_s.length > 0
       self.instance_variable_set("@#{v.downcase}", ENV[v])
@@ -49,7 +49,7 @@ def get_release_by_tag(in_repo, in_tag)
   
   headers = {
     'Content-Type' => 'application/vnd.github.v3+json',
-    'Authorization' => "token #{@github_token}"
+    'Authorization' => "token #{@input_github_token}"
   }
   url = "https://api.github.com/repos/#{in_repo}/releases/tags/#{tag}"
   resp = HTTParty.get(url, headers: headers)
@@ -65,7 +65,7 @@ def upload_to_release(in_repo, release_id, zip_file)
   options = {
     headers: {
       'Content-Type' => 'application/zip',
-      'Authorization' => "token #{@github_token}",
+      'Authorization' => "token #{@input_github_token}",
       'Content-Length' => File.size(zip_file).to_s
     },
     body: IO.read(zip_file, mode: 'rb'),
@@ -138,16 +138,16 @@ if ARGV[0].to_s.length > 0
   @cfg_file = ARGV[0]
 end
 
-if ENV.include?('CONFIG_FILE') && ENV['CONFIG_FILE'].to_s.length > 0
-  @cfg_file = ENV['CONFIG_FILE']
+if ENV.include?('INPUT_CONFIG_FILE') && ENV['INPUT_CONFIG_FILE'].to_s.length > 0
+  @cfg_file = ENV['INPUT_CONFIG_FILE']
 end
 
-if ENV.include?('FAIL_ON_MISSING_FILE') && ENV['FAIL_ON_MISSING_FILE'].to_s.length > 0
-  @fail_on_missing_file = ENV['FAIL_ON_MISSING_FILE']
+if ENV.include?('INPUT_FAIL_ON_MISSING_FILE') && ENV['INPUT_FAIL_ON_MISSING_FILE'].to_s.length > 0
+  @fail_on_missing_file = ENV['INPUT_FAIL_ON_MISSING_FILE']
 end
 
-if ENV.include?('OVERWRITE_DST') && ENV['OVERWRITE_DST'].to_s.length > 0
-  @overwrite_dst = ENV['OVERWRITE_DST']
+if ENV.include?('INPUT_OVERWRITE_DST') && ENV['INPUT_OVERWRITE_DST'].to_s.length > 0
+  @overwrite_dst = ENV['INPUT_OVERWRITE_DST']
 end
 
 config = JSON.parse(File.read(@cfg_file))
