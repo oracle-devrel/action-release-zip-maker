@@ -12,6 +12,9 @@ inputs:
   overwrite_dst:
     description: 'Should the ZIP file be overwritten if it exists? (default: true)'
     required: false
+  github_token:
+    description: 'The token used to interact with the GitHub API.  Usually use `secrets.GITHUB_TOKEN`.'
+    required: false
 outputs:
   zip_files:
     description: 'All of the ZIP files generated.'
@@ -24,3 +27,4 @@ runs:
     - ${{ inputs.config_file }}
     - ${{ inputs.fail_on_missing_file }}
     - ${{ inputs.overwrite_dst }}
+    - ${{ inputs.github_token }}

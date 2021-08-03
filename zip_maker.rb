@@ -11,6 +11,79 @@ class String
       false
     end
   end
+  
+  def get_tag
+    match = /^\w+\/\w+\/(.*)$/.match(self)
+    if !match.nil? && match.length == 2
+      match[1]
+    end
+  end
+end
+
+def get_env_vars()
+  required_vars = ['GITHUB_REF', 'github_token', 'GITHUB_REPOSITORY']
+  required_vars.each do |v|
+    if ENV.include?(v) && ENV[v].to_s.length > 0
+      self.instance_variable_set("@#{v.downcase}", ENV[v])
+    end
+  end
+  # validate they're all present and accounted for...
+  required_vars.each do |v|
+    if self.instance_variable_get("@#{v.downcase}").nil? || self.instance_variable_get("@#{v.downcase}").length <= 0
+      puts "ERROR - MISSING REQUIRED ENV VARIABLE: #{v}"
+      exit 1
+    end
+  end
+  
+  optional_vars = []
+  optional_vars.each do |v|
+    if ENV.include?(v) && ENV[v].to_s.length > 0
+      self.instance_variable_set("@#{v.downcase}", ENV[v])
+    end
+  end
+  
+end
+
+def get_release_by_tag(in_repo, in_tag)
+  ret = JSON.parse('[]')
+  
+  headers = {
+    'Content-Type' => 'application/vnd.github.v3+json',
+    'Authorization' => "token #{@gh_token}"
+  }
+  url = "https://api.github.com/repos/#{in_repo}/releases/tags/#{tag}"
+  resp = HTTParty.get(url, headers: headers)
+  
+  ret = JSON.parse(resp.body)
+  
+  ret
+end
+
+def upload_to_release(in_repo, release_id, zip_file)
+  ret = false
+  
+  options = {
+    headers: {
+      'Content-Type' => 'application/zip',
+      'Authorization' => "token #{@gh_token}",
+      'Content-Length' => File.size(zip_file).to_s
+    },
+    body: IO.read(zip_file, mode: 'rb'),
+    query: {
+      'name' => zip_file
+    }
+  }
+  url = "https://uploads.github.com/repos/#{in_repo}/releases/#{release_id}/assets"
+  resp = HTTParty.post(url, options)
+  
+  if resp.code == 201
+    ret = true
+  else
+    puts "ERROR:\nmessage: #{resp.message}, code: #{resp.code}, body: #{resp.body}"
+    exit 1
+  end
+  
+  ret
 end
 
 def element_present?(list, entry)
@@ -124,6 +197,11 @@ config.each do |cfg_entry|
         end
       end
     end
+  elsif cfg_entry['action'] == 'upload_file'
+    get_env_vars()
+    release = get_release_by_tag(@github_repository, @github_ref.get_tag)
+    release_id = release['id']
+    upload_to_release(@github_repository, release_id, cfg_entry['file_name'])
   end
 end
 
