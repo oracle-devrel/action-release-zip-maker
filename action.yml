@@ -1,0 +1,26 @@
+# Copyright (c) 2021 Oracle and/or its affiliates.
+
+name: 'Make ZIP From Release'
+description: 'Make one or more ZIP archives for a release.'
+inputs:
+  config_file:
+    description: 'The name of the configuration JSON file to read (default: release_files.json)'
+    required: false
+  fail_on_missing_file:
+    description: 'Whether or not it should fail if a specified file is missing (default: false)'
+    required: false
+  overwrite_dst:
+    description: 'Should the ZIP file be overwritten if it exists? (default: true)'
+    required: false
+outputs:
+  zip_files:
+    description: 'All of the ZIP files generated.'
+  missing_files:
+    description: 'Any missing files are given here.'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.config_file }}
+    - ${{ inputs.fail_on_missing_file }}
+    - ${{ inputs.overwrite_dst }}
