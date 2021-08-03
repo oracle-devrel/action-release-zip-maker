@@ -51,7 +51,7 @@ def get_release_by_tag(in_repo, in_tag)
     'Content-Type' => 'application/vnd.github.v3+json',
     'Authorization' => "token #{@input_github_token}"
   }
-  url = "https://api.github.com/repos/#{in_repo}/releases/tags/#{tag}"
+  url = "https://api.github.com/repos/#{in_repo}/releases/tags/#{in_tag}"
   resp = HTTParty.get(url, headers: headers)
   
   ret = JSON.parse(resp.body)
