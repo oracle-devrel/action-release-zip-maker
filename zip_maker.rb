@@ -109,18 +109,15 @@ end
 
 def add_dir(src, dst, recursive, zipfile)
   src_dir = File.expand_path(src)
-  puts "src_dir: #{src_dir}"
   
   if Dir.exist?(src_dir)
     zipfile.mkdir(dst)
     
     Dir.each_child(src_dir) do |x|
-      puts "at #{x}"
       entry_file = File.join(src_dir, x)
       if File.directory?(entry_file)
         add_dir(entry_file, entry_file, zipfile)
       elsif File.file?(entry_file)
-        puts "found #{entry_file}"
         add_file(entry_file, File.join(src, x), zipfile)
       end
     end
@@ -144,11 +141,11 @@ if ENV.include?('INPUT_CONFIG_FILE') && ENV['INPUT_CONFIG_FILE'].to_s.length > 0
 end
 
 if ENV.include?('INPUT_FAIL_ON_MISSING_FILE') && ENV['INPUT_FAIL_ON_MISSING_FILE'].to_s.length > 0
-  @fail_on_missing_file = ENV['INPUT_FAIL_ON_MISSING_FILE']
+  @fail_on_missing_file = ENV['INPUT_FAIL_ON_MISSING_FILE'].to_s.to_bool
 end
 
 if ENV.include?('INPUT_OVERWRITE_DST') && ENV['INPUT_OVERWRITE_DST'].to_s.length > 0
-  @overwrite_dst = ENV['INPUT_OVERWRITE_DST']
+  @overwrite_dst = ENV['INPUT_OVERWRITE_DST'].to_s.to_bool
 end
 
 config = JSON.parse(File.read(@cfg_file))
@@ -177,6 +174,8 @@ config.each do |cfg_entry|
               add_dir(src_file, dst_file, recursive, zipfile)
             elsif File.file?(src_file)
               add_file(src_file, dst_file, zipfile)
+            else
+              @missing_files << src_file
             end
           # no dest - use original name
           else
@@ -184,15 +183,26 @@ config.each do |cfg_entry|
               add_dir(src_file, src_file, recursive, zipfile)
             elsif File.file?(src_file)
               add_file(src_file, src_file, zipfile)
+            else
+              @missing_files << src_file
             end
           end
         # pattern?
         elsif element_present?(file_entry, 'src_pattern')
           Dir.glob(file_entry['src_pattern']) do |src_file|
+            dst_file = src_file
+            if element_present?(file_entry, 'dst_path')
+              split_file = dst_file.split('/')
+              dst_file = split_file[1..split_file.length].join('/')
+              dst_file = File.join(file_entry['dst_path'], dst_file)
+            end
+            
             if File.directory?(src_file)
-              add_dir(src_file, src_file, recursive, zipfile)
+              add_dir(src_file, dst_file, recursive, zipfile)
             elsif File.file?(src_file)
-              add_file(src_file, src_file, zipfile)
+              add_file(src_file, dst_file, zipfile)
+            else
+              @missing_files << src_file
             end
           end
         end
@@ -206,12 +216,12 @@ config.each do |cfg_entry|
   end
 end
 
-puts "zip_files: #{@zip_files.to_s}"
-puts "::set-output name=zip_files::#{@zip_files.to_s}"
+puts "zip_files: #{@zip_files.to_json}"
+puts "::set-output name=zip_files::#{@zip_files.to_json}"
 
-puts "missing_files: #{@missing_files.to_s}"
-puts "::set-output name=missing_files::#{@missing_files.to_s}"
+puts "missing_files: #{@missing_files.to_json}"
+puts "::set-output name=missing_files::#{@missing_files.to_json}"
 
 if @fail_on_missing_file && @missing_files.count > 0
-  return 1
+  exit 1
 end

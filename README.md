@@ -34,6 +34,10 @@ This reads a JSON config file, which tells what ZIP file(s) to create.  Here's a
         "src_pattern": "*.tf"
       },
       {
+        "src_pattern": "testing/*.tf",
+        "dst_path": "."
+      },
+      {
         "src": "orm/provider.tf",
         "dst": "provider.tf"
       },
@@ -63,11 +67,33 @@ Config file options:
 
 Inside of the `files` list attribute, it allows for `src` or `src_pattern` to specify the source file.  These accept files or directories to be given.
 
-If you'd like to overwrite the destination filename (in the ZIP), specify `dst`.  This only works with `src` (not `src_pattern`).
+If you'd like to overwrite the destination filename (in the ZIP), specify `dst`.  This only works with `src` (not `src_pattern`).  `src_pattern` supports specifying a different destination directory for each file, by using the `dst_path` attribute.
 
 `recursive` is whether or not all directory contents should be copied.  Default: `true`.
 
 Note that you can create multiple ZIP files from a single run... simply have multiple `create_zip` actions in the config file.
+
+Here's a sample Action config that acts every time a new release is created:
+
+```
+name: Release ZIP file packaging
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  create_zip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout repo'
+        uses: actions/checkout@v2
+      - name: 'Make (and upload) ZIP file(s)'
+        uses: oracle-devrel/action-release-zip-maker@v0.5
+        id: zip_maker
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+```
 
 ## Copyright Notice
 Copyright (c) 2021 Oracle and/or its affiliates.
