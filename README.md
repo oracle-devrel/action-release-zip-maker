@@ -12,7 +12,7 @@ The main reason is for flexibility.  Many of the existing Actions I looked at di
 |-------|------|-------------|
 | `config_file` | string | The name of the JSON config file.  Default: `release_files.json`. |
 | `fail_on_missing_file` | bool | Whether or not the Action should fail if a source file is missing (not found).  Default: `false`. |
-| `overwrite_dst` | string | Should the ZIP file be overwritten?  Default: `true`. |
+| `overwrite_dst` | string | Should the ZIP file be overwritten (if it already exists)?  Default: `true`. |
 | `github_token` | string | The token used to interact with the GitHub API.  Usually use `secrets.GITHUB_TOKEN`. |
 
 ## Outputs
@@ -35,7 +35,10 @@ This reads a JSON config file, which tells what ZIP file(s) to create.  Here's a
       },
       {
         "src_pattern": "testing/*.tf",
-        "dst_path": "."
+        "dst_path": ".",
+        "exclude": [
+          "testing/something.tf"
+        ]
       },
       {
         "src": "orm/provider.tf",
@@ -68,6 +71,8 @@ Config file options:
 Inside of the `files` list attribute, it allows for `src` or `src_pattern` to specify the source file.  These accept files or directories to be given.
 
 If you'd like to overwrite the destination filename (in the ZIP), specify `dst`.  This only works with `src` (not `src_pattern`).  `src_pattern` supports specifying a different destination directory for each file, by using the `dst_path` attribute.
+
+The `src_pattern` supports excluding files from the pattern as well, using the `exclude` attribute.  This is an array of GLOBs, which can be used to exclude files from being written to the ZIP file.  If a file exists in the ZIP file, it will not be overwritten (so there might be times when files must be excluded due to this behavior).
 
 `recursive` is whether or not all directory contents should be copied.  Default: `true`.
 

@@ -87,6 +87,23 @@ def upload_to_release(in_repo, release_id, zip_file)
   ret
 end
 
+def exclude?(in_file, in_excludes)
+  ret = false
+  
+  if !in_file.nil? && in_file.to_s.length > 0 && !in_excludes.nil? && in_excludes.class == Array && in_excludes.count > 0
+    in_excludes.each do |exclude|
+      Dir.glob(exclude).each do |real_exclude|
+        if in_file.casecmp(real_exclude) == 0
+          ret = true
+          break
+        end
+      end
+    end
+  end
+  
+  ret
+end
+
 def element_present?(list, entry)
   ret = false
   
@@ -100,6 +117,7 @@ end
 def add_file(src, dst, zipfile)
   src_file = File.expand_path(src)
   
+  puts "adding file #{src}"
   if File.exist?(src_file)
     zipfile.add(dst, src_file)
   else
@@ -190,19 +208,25 @@ config.each do |cfg_entry|
         # pattern?
         elsif element_present?(file_entry, 'src_pattern')
           Dir.glob(file_entry['src_pattern']) do |src_file|
-            dst_file = src_file
-            if element_present?(file_entry, 'dst_path')
-              split_file = dst_file.split('/')
-              dst_file = split_file[1..split_file.length].join('/')
-              dst_file = File.join(file_entry['dst_path'], dst_file)
-            end
+            exclude = file_entry.include?('exclude') && exclude?(src_file, file_entry['exclude']) ? true : false
             
-            if File.directory?(src_file)
-              add_dir(src_file, dst_file, recursive, zipfile)
-            elsif File.file?(src_file)
-              add_file(src_file, dst_file, zipfile)
+            if !exclude
+              dst_file = src_file
+              if element_present?(file_entry, 'dst_path')
+                split_file = dst_file.split('/')
+                dst_file = split_file[1..split_file.length].join('/')
+                dst_file = File.join(file_entry['dst_path'], dst_file)
+              end
+              
+              if File.directory?(src_file)
+                add_dir(src_file, dst_file, recursive, zipfile)
+              elsif File.file?(src_file)
+                add_file(src_file, dst_file, zipfile)
+              else
+                @missing_files << src_file
+              end
             else
-              @missing_files << src_file
+              puts "excluding #{src_file}"
             end
           end
         end
