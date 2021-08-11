@@ -90,3 +90,4 @@ build-iPhoneSimulator/
 # .rubocop-https?--*
 
 release_files.json
+**/*.zip
