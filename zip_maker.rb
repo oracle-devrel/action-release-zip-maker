@@ -116,13 +116,18 @@ end
 
 def add_file(src, dst, zipfile)
   src_file = File.expand_path(src)
+  dst_file = src
   # remove leading . and /
-  if File.dirname(dst).split('/')[0] == '.'
-    dirs = File.dirname(dst).split('/')
-    dst_file = File.join(dirs[1..dirs.length], File.basename(dst))
-    dst_file = dst_file[1..dst_file.length] if dst_file[0] == '/'
-  else
-    dst_file = dst
+  if File.basename(dst) != '.'
+    if File.dirname(dst).split('/')[0] == '.'
+      dirs = File.dirname(dst).split('/')
+      proper_dirs = ''
+      if dirs.length > 1
+        proper_dirs = dirs[1..dirs.length]
+      end
+      dst_file = File.join(proper_dirs, File.basename(dst))
+      dst_file = dst_file[1..dst_file.length] if dst_file[0] == '/'
+    end
   end
   
   puts "adding file #{src} as #{dst_file}"
