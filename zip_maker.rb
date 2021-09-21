@@ -139,15 +139,13 @@ def add_file(src, dst, zipfile)
 end
 
 def add_dir(src, dst, recursive, zipfile)
-  src_dir = File.expand_path(src)
-  
-  if Dir.exist?(src_dir)
+  if Dir.exist?(src)
     zipfile.mkdir(dst)
     
-    Dir.each_child(src_dir) do |x|
-      entry_file = File.join(src_dir, x)
+    Dir.each_child(src) do |x|
+      entry_file = File.join(src, x)
       if File.directory?(entry_file)
-        add_dir(entry_file, entry_file, zipfile)
+        add_dir(entry_file, entry_file, recursive, zipfile)
       elsif File.file?(entry_file)
         add_file(entry_file, File.join(src, x), zipfile)
       end
