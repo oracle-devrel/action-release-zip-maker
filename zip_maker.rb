@@ -224,9 +224,8 @@ config.each do |cfg_entry|
             if !exclude
               dst_file = src_file
               if element_present?(file_entry, 'dst_path')
-                split_file = dst_file.split('/')
-                dst_file = split_file[1..split_file.length].join('/')
-                dst_file = File.join(file_entry['dst_path'], dst_file)
+                base_dst_file = File.basename(dst_file)
+                dst_file = File.join(file_entry['dst_path'], base_dst_file)
               end
               
               if File.directory?(src_file)
