@@ -1,12 +1,21 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    rubyzip (2.3.2)
+    csv (3.3.6)
+    httparty (0.24.2)
+      csv
+      mini_mime (>= 1.0.0)
+      multi_xml (>= 0.5.2)
+    mini_mime (1.1.5)
+    multi_xml (0.6.0)
+    rubyzip (3.4.0)
 
 PLATFORMS
   x86_64-darwin-19
+  x86_64-linux
 
 DEPENDENCIES
+  httparty
   rubyzip
 
 BUNDLED WITH
